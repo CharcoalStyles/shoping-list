@@ -1,11 +1,11 @@
-import { PrismaClient, ListItem } from '@prisma/client'
+import { PrismaClient, GroceryItem } from '@prisma/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const prisma = new PrismaClient()
 
 export default async function handle(
   req: NextApiRequest,
-  res: NextApiResponse<ListItem[] | { error: string }>) {
+  res: NextApiResponse<GroceryItem[] | { error: string }>) {
 
   //get the item id from the query string
   const { id } = req.body
@@ -17,7 +17,7 @@ export default async function handle(
   }
 
   //delete the item from the database
-  await prisma.listItem.delete({
+  await prisma.groceryItem.delete({
     where: {
       id: parseInt(id as string)
     }
