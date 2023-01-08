@@ -3,12 +3,25 @@ import Image from "next/image";
 import { Inter } from "@next/font/google";
 import styles from "../styles/Home.module.css";
 import { Header } from "../components/Header";
-import { Typography, TextField } from "@mui/material";
+import { TextField, Button, List, ListItem, IconButton } from "@mui/material";
 import { Container } from "@mui/system";
+import axios from "axios";
+import { useState } from "react";
+import useSWR from "swr";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { ListItem as ShoppingItem } from "@prisma/client";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+
 export default function Home() {
+  const [newItem, setNewItem] = useState<string>("");
+  const { data, error, mutate } = useSWR<Array<ShoppingItem>>(
+    "/api/items/get",
+    fetcher
+  );
+
   return (
     <>
       <Head>
@@ -20,8 +33,54 @@ export default function Home() {
       <Header />
 
       <Container>
-        <Typography variant="h1">Heading</Typography>
-        <TextField  />
+        <TextField
+          sx={{ mt: 2 }}
+          label="New Item"
+          variant="filled"
+          fullWidth
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <Button
+                variant="contained"
+                color="secondary"
+                disabled={newItem.trim().length === 0}
+                onClick={async () => {
+                  await axios.post("/api/items/add", { item: newItem.trim() });
+                  mutate();
+                  setNewItem("");
+                }}
+              >
+                Add
+              </Button>
+            ),
+          }}
+        />
+        {data && (
+          <List>
+            {data.map((item) => (
+              <ListItem
+                key={item.id}
+                secondaryAction={
+                  <IconButton
+                    color="error"
+                    edge="end"
+                    aria-label="delete"
+                    onClick={async () => {
+                      await axios.post("/api/items/delete", { id: item.id });
+                      mutate();
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                }
+              >
+                {item.name}
+              </ListItem>
+            ))}
+          </List>
+        )}
       </Container>
     </>
   );
