@@ -7,7 +7,7 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { GroceryItem } from "@prisma/client";
+import { GroceryItem, ListItem } from "@prisma/client";
 
 const inter = Inter({ subsets: ["latin"] });
 
