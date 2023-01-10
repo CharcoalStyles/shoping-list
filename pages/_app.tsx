@@ -19,6 +19,7 @@ export default function MyApp(props: MyAppProps) {
   return (
     <CacheProvider value={emotionCache}>
       <Head>
+        <link rel="manifest" href="/manifest.json" />
         <meta name="application-name" content="Shopping List" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="viewport" content="initial-scale=1, width=device-width" />
