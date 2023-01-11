@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "server-build": "concurrently \"yarn build\" \"yarn prisma migrate deploy\""
+    "server-build": "concurrently \"yarn build\" \"yarn prisma migrate deploy\" \"yarn prisma generate\""
   },
   "dependencies": {
     "@emotion/cache": "^11.10.5",
