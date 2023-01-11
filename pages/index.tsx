@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { GroceryItem } from "@prisma/client";
+import { processQueue, pushData } from "../src/putCache";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,12 +17,18 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 export default function Home() {
   const [newItem, setNewItem] = useState<string>("");
   const { data, error, mutate, isLoading } = useSWR<Array<GroceryItem>>(
-    "/api/items/get",
+    "/api/item",
     fetcher
   );
   const [elementsAboveHeight, setElementsAboveHeight] = useState<number>(0);
 
   const listRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      processQueue();
+    }
+  }, []);
 
   useEffect(() => {
     if (listRef.current === null) return;
@@ -64,8 +71,18 @@ export default function Home() {
               e.preventDefault();
               e.stopPropagation();
               if (newItem.trim().length > 0) {
-                axios.post("/api/items/add", { item: newItem.trim() });
-                mutate();
+                pushData({
+                  url: "/api/item",
+                  method: "POST",
+                  body: { name: newItem.trim() },
+                }).then(() => {
+                  mutate();
+                });
+                mutate(
+                  data === undefined
+                    ? [{ name: newItem.trim(), id: Math.random() }]
+                    : [...data, { name: newItem.trim(), id: Math.random() }]
+                );
                 setNewItem("");
               }
             }
@@ -76,11 +93,22 @@ export default function Home() {
                 variant="contained"
                 color="secondary"
                 disabled={newItem.trim().length === 0}
-                onClick={async () => {
-                  await axios.post("/api/items/add", { item: newItem.trim() });
-                  mutate();
+                onClick={() => {
+                  pushData({
+                    url: "/api/item",
+                    method: "POST",
+                    body: { name: newItem.trim() },
+                  }).then(() => {
+                    mutate();
+                  });
+                  mutate(
+                    data === undefined
+                      ? [{ name: newItem.trim(), id: Math.random() }]
+                      : [...data, { name: newItem.trim(), id: Math.random() }]
+                  );
                   setNewItem("");
-                }}>
+                }}
+              >
                 Add
               </Button>
             ),
@@ -95,7 +123,8 @@ export default function Home() {
               width: "90%",
               top: `calc(${elementsAboveHeight}px + 32px)`,
             }}
-            ref={listRef}>
+            ref={listRef}
+          >
             {data.map((item) => (
               <ListItem
                 sx={{
@@ -114,13 +143,20 @@ export default function Home() {
                     color="error"
                     edge="end"
                     aria-label="delete"
-                    onClick={async () => {
-                      await axios.post("/api/items/delete", { id: item.id });
-                      mutate();
-                    }}>
+                    onClick={() => {
+                      pushData({
+                        url: `/api/item?id=${item.id}`,
+                        method: "DELETE",
+                      }).then(() => {
+                        mutate();
+                      });
+                      mutate(data.filter((i) => i.id !== item.id));
+                    }}
+                  >
                     <DeleteIcon />
                   </IconButton>
-                }>
+                }
+              >
                 {item.name}
               </ListItem>
             ))}
