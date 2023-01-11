@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "server-build": "prisma create database --if-not-exists && yarn prisma migrate deploy && yarn prisma generate && yarn build"
+    "server-build": "yarn prisma migrate deploy && yarn prisma generate && yarn build",
+    "server-build-init": "prisma db push && yarn build"
   },
   "dependencies": {
     "@emotion/cache": "^11.10.5",
