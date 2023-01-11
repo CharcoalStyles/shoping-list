@@ -15,7 +15,11 @@ type CompleteData = {
 
 type PostData = {
   method: "POST";
-  body: any;
+  body: PostBody;
+};
+
+type PostBody = {
+  name: string;
 };
 
 type DeleteData = {
@@ -91,3 +95,15 @@ export const processQueue = async () => {
     await (await dbPromise()).delete(store, key);
   });
 };
+
+export const unProcessedDelete = async (data: PostBody) => {
+  const keys = await listKeys();
+
+  keys.forEach(async (key) => {
+    const item = await get(key.toString());
+
+    if (data.name === item.body.name) {
+      await (await dbPromise()).delete(store, key);
+    }
+  });
+}

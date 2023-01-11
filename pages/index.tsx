@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { GroceryItem } from "@prisma/client";
-import { processQueue, pushData } from "../src/putCache";
+import { processQueue, pushData, unProcessedDelete } from "../src/putCache";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -66,27 +66,6 @@ export default function Home() {
           fullWidth
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              e.stopPropagation();
-              if (newItem.trim().length > 0) {
-                pushData({
-                  url: "/api/item",
-                  method: "POST",
-                  body: { name: newItem.trim() },
-                }).then(() => {
-                  mutate();
-                });
-                mutate(
-                  data === undefined
-                    ? [{ name: newItem.trim(), id: Math.random() }]
-                    : [...data, { name: newItem.trim(), id: Math.random() }]
-                );
-                setNewItem("");
-              }
-            }
-          }}
           InputProps={{
             endAdornment: (
               <Button
@@ -104,7 +83,10 @@ export default function Home() {
                   mutate(
                     data === undefined
                       ? [{ name: newItem.trim(), id: Math.random() }]
-                      : [...data, { name: newItem.trim(), id: Math.random() }]
+                      : [
+                          ...data,
+                          { name: newItem.trim(), id: Math.random() * -1 },
+                        ]
                   );
                   setNewItem("");
                 }}
@@ -144,6 +126,10 @@ export default function Home() {
                     edge="end"
                     aria-label="delete"
                     onClick={() => {
+                      if (item.id < 0) {
+                        mutate(data.filter((i) => i.id !== item.id));
+                        unProcessedDelete({ name: item.name });
+                      }
                       pushData({
                         url: `/api/item?id=${item.id}`,
                         method: "DELETE",
