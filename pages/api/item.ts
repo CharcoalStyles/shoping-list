@@ -52,6 +52,7 @@ export default async function handle(
       });
 
       res.end();
+      break;
     case "DELETE":
       //check to see if the item id is present
       if (!id) {
