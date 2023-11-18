@@ -6,13 +6,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./data/shopping.db"
 }
 
 model GroceryItem {
-  id    Int     @id @default(autoincrement())
-  name  String
+  id   Int    @id @default(autoincrement())
+  name String
 }
 
 //postgresql://clcr6lwt800ie9rs1b2he6juq:P6l4sZhDleA7PfiHsoswfc2Y@127.0.0.1:11500/clcr6lwt800ig9rs1h4ycc2sk
